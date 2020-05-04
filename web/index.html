@@ -28,6 +28,24 @@
       });
     }
   </script>
+  <script src="https://www.gstatic.com/firebasejs/7.14.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.14.2/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/7.14.2/firebase-firestore.js"></script>
+
+  <script>
+    var firebaseConfig = {
+      apiKey: "AIzaSyBnGp-TKdtlgxKhwMPsSy2wwAn4ELkca-U",
+      authDomain: "co-swipelab-poker.firebaseapp.com",
+      databaseURL: "https://co-swipelab-poker.firebaseio.com",
+      projectId: "co-swipelab-poker",
+      storageBucket: "co-swipelab-poker.appspot.com",
+      messagingSenderId: "5814700529",
+      appId: "1:5814700529:web:78d3691ad8081cceba5c50"
+    };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
   <script src="main.dart.js" type="application/javascript"></script>
 </body>
 </html>

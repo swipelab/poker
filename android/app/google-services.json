@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "5814700529",
+    "firebase_url": "https://co-swipelab-poker.firebaseio.com",
+    "project_id": "co-swipelab-poker",
+    "storage_bucket": "co-swipelab-poker.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:5814700529:android:96116d2341111794ba5c50",
+        "android_client_info": {
+          "package_name": "co.swipelab.poker"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "5814700529-b40vd92gjcpgnsd1gd9von4bdg4a9ce1.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBZRdySo_hm0Eq4zNMSBc9eMFOe9E_SvzI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "5814700529-b40vd92gjcpgnsd1gd9von4bdg4a9ce1.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
