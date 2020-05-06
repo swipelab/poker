@@ -85,23 +85,23 @@ shuffle(List list) {
   }
 }
 
-class Face {
+class GameCard {
   final Rank rank;
   final Suit suit;
 
-  Face({this.rank, this.suit});
+  GameCard({this.rank, this.suit});
 }
 
 class Deck {
-  final List<Face> cards;
+  final List<GameCard> cards;
 
   Deck({this.cards});
 
   static Deck shuffled() {
-    final cards = List<Face>();
+    final cards = List<GameCard>();
 
     Rank.values.forEach((rank) =>
-        Suit.values.forEach((suit) => cards.add(Face(rank: rank, suit: suit))));
+        Suit.values.forEach((suit) => cards.add(GameCard(rank: rank, suit: suit))));
 
     shuffle(cards);
 
