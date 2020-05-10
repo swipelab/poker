@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:scoped/scoped.dart';
 
@@ -100,8 +99,8 @@ class Deck {
   static Deck shuffled() {
     final cards = List<GameCard>();
 
-    Rank.values.forEach((rank) =>
-        Suit.values.forEach((suit) => cards.add(GameCard(rank: rank, suit: suit))));
+    Rank.values.forEach((rank) => Suit.values
+        .forEach((suit) => cards.add(GameCard(rank: rank, suit: suit))));
 
     shuffle(cards);
 
@@ -109,10 +108,22 @@ class Deck {
   }
 }
 
-class Player {}
+class Player {
+  final String alias;
+  final int balance;
+  Player({this.alias, this.balance});
+}
+
+class Seat {
+  final Strip<GameCard> cards;
+  final Player player;
+  final int balance;
+  Seat({this.cards, this.player, this.balance});
+}
 
 class Table {
   final Strip<Player> players = Strip<Player>();
+  final Strip<Seat> seats = Strip<Seat>();
 }
 
 class App {
@@ -124,7 +135,8 @@ class App {
   }
 
   signIn() async {
-    await FirebaseAuth.instance.signInWithEmailAndPassword(email: 'alex@swipelab.co', password: 'cucubau');
+    await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: 'alex@swipelab.co', password: 'cucubau');
   }
 
   void handleAuthStateChanged(FirebaseUser firebaseUser) {

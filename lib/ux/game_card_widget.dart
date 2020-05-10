@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:poker/app.dart';
 
 class GameCardWidget extends StatelessWidget {
+
   Color color(GameCard card) =>
       (card.suit == Suit.Heart || card.suit == Suit.Diamond)
           ? Colors.red
@@ -17,17 +18,18 @@ class GameCardWidget extends StatelessWidget {
               color: color(card),
               fontSize: size,
               height: 1,
-              fontWeight: FontWeight.w100));
+              fontWeight: FontWeight.w300));
 
   final GameCard card;
+  final double size;
 
-  GameCardWidget({this.card});
+  GameCardWidget({this.card, this.size = 48});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 48,
-      height: 64,
+      width: size,
+      height: size * 1.33,
       decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(4),
           gradient: LinearGradient(
@@ -38,7 +40,7 @@ class GameCardWidget extends StatelessWidget {
           boxShadow: [BoxShadow(blurRadius: 3, color: Colors.black54)]),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: <Widget>[suit(context, card), rank(context, card)],
+        children: <Widget>[suit(context, card, size: size * 0.5), rank(context, card, size: size * 0.5)],
       ),
     );
   }

@@ -1,10 +1,12 @@
-import 'dart:math';
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:poker/app.dart';
 import 'package:poker/ux/game_card_widget.dart';
+import 'package:poker/ux/player_widget.dart';
+import 'package:poker/ux/table_widget.dart';
 import 'package:scoped/scoped.dart';
 
 void main() async {
@@ -42,6 +44,34 @@ class TablePage extends StatefulWidget {
 class _TablePageState extends State<TablePage> {
   final Deck deck = Deck.shuffled();
 
+  Duration _elapsed;
+  Duration _playerTurn;
+  Timer _timer;
+  DateTime _startedAt;
+  double _progress = 0.0;
+
+  initState() {
+    super.initState();
+    _elapsed = Duration.zero;
+    _startedAt = DateTime.now();
+    _playerTurn = Duration(seconds: 10);
+    _timer = Timer.periodic(Duration(milliseconds: 100), handleTick);
+    _progress = 0;
+  }
+
+  dispose() {
+    super.dispose();
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  handleTick(Timer t) {
+    _elapsed = DateTime.now().difference(_startedAt);
+
+    _progress = _elapsed.inMilliseconds / _playerTurn.inMilliseconds;
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,26 +92,11 @@ class _TablePageState extends State<TablePage> {
       ),
       body: Stack(
         children: [
-//          Positioned.fill(
-//              child: Image.asset(
-//            'assets/table.cotton.jpg',
-//            fit: BoxFit.cover,
-//          )),
           Positioned.fill(
               child: CustomPaint(
             painter: TablePainter(),
           )),
-          Center(
-            child: Row(
-              children: deck.cards
-                  .take(5)
-                  .map((card) => Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: GameCardWidget(card: card),
-                  ))
-                  .toList(),
-            ),
-          ),
+          Positioned.fill(child: TableWidget(progress: _progress)),
         ],
       ),
     );
