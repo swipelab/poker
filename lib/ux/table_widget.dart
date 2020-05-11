@@ -83,34 +83,31 @@ class TableWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 128),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Container(
-            width: 1000,
-            height: 600,
-            child: CustomPaint(
-              painter: TablePainter(
-                  offset: pi / players.length,
-                  playerCount: playerCount,
-                  length: 0,
-                  progress: progress),
-              child: Stack(
-                children: <Widget>[
-                  Positioned.fill(
-                    child: buildCommonCards(context),
-                  ),
-                ]..addAll(
-                    players.mapIndex(
-                      (e, i) => Align(
-                        alignment: align[players.length][i],
-                        child: PlayerWidget(
-                            alias: e.alias, balance: e.balance.toString()),
-                      ),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Container(
+          width: 1000,
+          height: 600,
+          child: CustomPaint(
+            painter: TablePainter(
+                offset: pi / players.length,
+                playerCount: playerCount,
+                length: 0,
+                progress: progress),
+            child: Stack(
+              children: <Widget>[
+                Positioned.fill(
+                  child: buildCommonCards(context),
+                ),
+              ]..addAll(
+                  players.mapIndex(
+                    (e, i) => Align(
+                      alignment: align[players.length][i],
+                      child: PlayerWidget(
+                          alias: e.alias, balance: e.balance.toString()),
                     ),
                   ),
-              ),
+                ),
             ),
           ),
         ),
@@ -130,7 +127,7 @@ class TablePainter extends CustomPainter {
   void paintBounds(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
     final gap = 192;
-    final radius = size.height  / 2;
+    final radius = size.height / 2;
 
     final paint = Paint()
       ..color = Colors.white24

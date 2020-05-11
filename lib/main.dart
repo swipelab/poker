@@ -75,31 +75,59 @@ class _TablePageState extends State<TablePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF003723),
-      drawer: Drawer(),
-      appBar: AppBar(
-        title: Text('Poker'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: <Widget>[
-          context.get<App>().user.bindValue(
-              (context, value) => Center(child: Text(value?.email ?? ''))),
-          IconButton(
-            icon: Icon(Icons.account_circle),
-            onPressed: context.get<App>().signIn,
-          )
-        ],
-      ),
-      body: Stack(
-        children: [
-          Positioned.fill(
-              child: CustomPaint(
-            painter: TablePainter(),
-          )),
-          Positioned.fill(child: TableWidget(progress: _progress)),
-        ],
-      ),
-    );
+        backgroundColor: Color(0xFF003723),
+        drawer: Drawer(),
+        appBar: AppBar(
+          title: Text('Poker'),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          actions: <Widget>[
+            context.get<App>().user.bindValue(
+                (context, value) => Center(child: Text(value?.email ?? ''))),
+            IconButton(
+              icon: Icon(Icons.account_circle),
+              onPressed: context.get<App>().signIn,
+            )
+          ],
+        ),
+        body: Container(
+            child: Stack(
+          children: <Widget>[
+            Positioned.fill(
+                child: Padding(
+                    padding: const EdgeInsets.only(bottom: 128.0),
+                    child: TableWidget(progress: _progress))),
+            Align(
+              alignment: Alignment(0, 0.95),
+              child: Container(
+                height: 38,
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFFFFFFFF),
+                        Color(0xFFC6C6C6),
+                        Color(0xFFFFFFFF),
+                        Color(0xFFE0E0E0),
+                      ],
+                      stops: [0, 0.1, 0.7, 1],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    )),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    FlatButton(child: Text('Fold'), onPressed: () {}),
+                    Container(width: 1, color: Colors.grey.shade200),
+                    FlatButton(child: Text('Call'), onPressed: () {}),
+                    Container(width: 1, color: Colors.grey.shade200),
+                    FlatButton(child: Text('Raise'), onPressed: () {}),
+                  ],
+                ),
+              ),
+            )
+          ],
+        )));
   }
 }
 
@@ -118,10 +146,4 @@ class FacePlaceholder extends StatelessWidget {
       child: child ?? Container(width: 100, height: 150),
     );
   }
-}
-
-class TablePainter extends CustomPainter {
-  void paint(Canvas canvas, Size size) {}
-
-  bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
