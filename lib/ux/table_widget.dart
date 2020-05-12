@@ -86,8 +86,8 @@ class TableWidget extends StatelessWidget {
       child: FittedBox(
         fit: BoxFit.scaleDown,
         child: Container(
-          width: 1000,
-          height: 600,
+          width: 1280 * .55,
+          height: 720 * .55,
           child: CustomPaint(
             painter: TablePainter(
                 offset: pi / players.length,
@@ -178,7 +178,7 @@ class TablePainter extends CustomPainter {
   }
 
   void paint(Canvas canvas, Size size) {
-    paintDealerTimming(canvas, size);
+    // paintDealerTimming(canvas, size);
     paintBounds(canvas, size);
   }
 

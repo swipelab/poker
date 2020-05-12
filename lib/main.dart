@@ -122,6 +122,9 @@ class _TablePageState extends State<TablePage> {
                     FlatButton(child: Text('Call'), onPressed: () {}),
                     Container(width: 1, color: Colors.grey.shade200),
                     FlatButton(child: Text('Raise'), onPressed: () {}),
+                    MaterialButton(child: Icon(Icons.remove),onPressed: (){}, minWidth: 48),
+                    Slider(min: 0, max: 1000, value: 200, onChanged: (v){},),
+                    MaterialButton(child: Icon(Icons.add), onPressed: (){}, minWidth: 48),
                   ],
                 ),
               ),
@@ -147,3 +150,4 @@ class FacePlaceholder extends StatelessWidget {
     );
   }
 }
+
