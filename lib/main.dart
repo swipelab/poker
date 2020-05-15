@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:poker/app.dart';
-import 'package:poker/ux/game_card_widget.dart';
-import 'package:poker/ux/player_widget.dart';
+import 'package:poker/game.dart';
 import 'package:poker/ux/table_widget.dart';
 import 'package:scoped/scoped.dart';
 
@@ -122,9 +121,18 @@ class _TablePageState extends State<TablePage> {
                     FlatButton(child: Text('Call'), onPressed: () {}),
                     Container(width: 1, color: Colors.grey.shade200),
                     FlatButton(child: Text('Raise'), onPressed: () {}),
-                    MaterialButton(child: Icon(Icons.remove),onPressed: (){}, minWidth: 48),
-                    Slider(min: 0, max: 1000, value: 200, onChanged: (v){},),
-                    MaterialButton(child: Icon(Icons.add), onPressed: (){}, minWidth: 48),
+                    MaterialButton(
+                        child: Icon(Icons.remove),
+                        onPressed: () {},
+                        minWidth: 48),
+                    Slider(
+                      min: 0,
+                      max: 1000,
+                      value: 200,
+                      onChanged: (v) {},
+                    ),
+                    MaterialButton(
+                        child: Icon(Icons.add), onPressed: () {}, minWidth: 48),
                   ],
                 ),
               ),
@@ -150,4 +158,3 @@ class FacePlaceholder extends StatelessWidget {
     );
   }
 }
-

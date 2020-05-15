@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:poker/app.dart';
+import 'package:poker/game.dart';
 import 'package:poker/ux/game_card_widget.dart';
 
 class Avatar extends StatelessWidget {
@@ -19,12 +19,12 @@ class Avatar extends StatelessWidget {
   }
 }
 
-class PlayerWidget extends StatelessWidget {
+class SeatWidget extends StatelessWidget {
 
   final String alias;
   final String balance;
 
-  PlayerWidget({this.alias, this.balance});
+  SeatWidget({this.alias, this.balance});
 
   @override
   Widget build(BuildContext context) {

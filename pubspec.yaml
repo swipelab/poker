@@ -13,7 +13,7 @@ dependencies:
   cloud_firestore: ^0.13.2
   firebase_auth: ^0.16.0
   cupertino_icons: ^0.1.2
-  scoped: 1.9.8
+  scoped: 2.0.0
   bezier: any
 
 dev_dependencies:

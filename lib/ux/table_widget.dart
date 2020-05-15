@@ -1,9 +1,9 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:poker/app.dart';
+import 'package:poker/game.dart';
 import 'package:poker/ux/game_card_widget.dart';
-import 'package:poker/ux/player_widget.dart';
+import 'package:poker/ux/seat_widget.dart';
 import 'package:poker/list_extension.dart';
 
 class TableWidget extends StatelessWidget {
@@ -89,11 +89,7 @@ class TableWidget extends StatelessWidget {
           width: 1280 * .55,
           height: 720 * .55,
           child: CustomPaint(
-            painter: TablePainter(
-                offset: pi / players.length,
-                playerCount: playerCount,
-                length: 0,
-                progress: progress),
+            painter: TablePainter(offset: pi / players.length, playerCount: playerCount, length: 0, progress: progress),
             child: Stack(
               children: <Widget>[
                 Positioned.fill(
@@ -103,8 +99,7 @@ class TableWidget extends StatelessWidget {
                   players.mapIndex(
                     (e, i) => Align(
                       alignment: align[players.length][i],
-                      child: PlayerWidget(
-                          alias: e.alias, balance: e.balance.toString()),
+                      child: SeatWidget(alias: e.alias, balance: e.balance.toString()),
                     ),
                   ),
                 ),
@@ -136,17 +131,11 @@ class TablePainter extends CustomPainter {
 
     canvas.drawRRect(
         RRect.fromRectAndRadius(
-            Rect.fromCenter(
-                center: center, width: size.width, height: size.height),
-            Radius.circular(radius)),
+            Rect.fromCenter(center: center, width: size.width, height: size.height), Radius.circular(radius)),
         paint);
 
     canvas.drawRRect(
-        RRect.fromRectAndRadius(
-            Rect.fromCenter(
-                center: center,
-                width: size.width - gap,
-                height: size.height - gap),
+        RRect.fromRectAndRadius(Rect.fromCenter(center: center, width: size.width - gap, height: size.height - gap),
             Radius.circular(radius)),
         paint);
   }
@@ -155,9 +144,9 @@ class TablePainter extends CustomPainter {
     final length = 250.0;
     final center = size.center(Offset.zero);
     final playerArch = (2 * pi) / playerCount.toDouble();
-    final p2 = Offset(sin(offset + playerArch - playerArch * progress),
-            cos(offset + playerArch - playerArch * progress))
-        .scale(length, length);
+    final p2 =
+        Offset(sin(offset + playerArch - playerArch * progress), cos(offset + playerArch - playerArch * progress))
+            .scale(length, length);
 
     canvas.drawLine(
         center,
