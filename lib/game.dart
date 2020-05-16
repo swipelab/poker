@@ -1,5 +1,4 @@
 import 'dart:math';
-
 import 'package:scoped/scoped.dart';
 
 enum Rank {
@@ -21,6 +20,129 @@ enum Rank {
 enum Suit { Club, Diamond, Heart, Spade }
 
 enum Round { Begin, Preflop, Flop, Turn, River, End }
+
+enum Hand {
+  HighCard,
+  Pair,
+  TwoPair,
+  ThreeKind,
+  Straight,
+  Flush,
+  FullHouse,
+  FourKind,
+  StraightFlush,
+  RoyalFlush, //not necessary
+}
+
+class HandRank {
+  final Hand hand;
+  final Rank rank;
+
+  HandRank(this.hand, this.rank);
+
+  static HandRank from(Iterable<GameCard> cards) {
+    final suits = <Suit, int>{};
+    final ranks = <Rank, int>{};
+
+    var high = -1;
+    var low = Rank.values.length;
+    var sum = 0;
+
+    cards.forEach((e) {
+      low = min(e.rank.index, low);
+      high = max(e.rank.index, high);
+      sum += e.rank.index;
+
+      suits[e.suit] = (suits[e.suit] ?? 0) + 1;
+      ranks[e.rank] = (ranks[e.rank] ?? 0) + 1;
+    });
+
+    final straight = sum - 5 * low == 0.5 * (high - low) * (high - low + 1);
+    final aceHigh = low == Rank.Ten.index;
+    final flushed = suits.values.max((e) => e);
+    final kind =
+        ranks.entries.max((e) => e.value * Rank.values.length + e.key.index);
+
+    final groups = ranks.entries.length;
+    final product = ranks.entries.fold(1, (p, e) => p *= e.value);
+
+    if (flushed == 5 && straight && aceHigh)
+      return HandRank(Hand.RoyalFlush, Rank.Ace);
+    if (flushed == 5 && straight)
+      return HandRank(Hand.StraightFlush, Rank.values[high]);
+    if (groups == 2 && product == 4) return HandRank(Hand.FourKind, kind.key);
+    if (groups == 2 && product == 6) return HandRank(Hand.FullHouse, kind.key);
+    if (flushed == 5) return HandRank(Hand.Flush, Rank.values[high]);
+    if (straight) return HandRank(Hand.Straight, Rank.values[high]);
+    if (groups == 3 && product == 3) return HandRank(Hand.ThreeKind, kind.key);
+    if (groups == 3 && product == 4) return HandRank(Hand.TwoPair, kind.key);
+    if (groups == 3 && product == 2) return HandRank(Hand.Pair, kind.key);
+    return HandRank(Hand.HighCard, kind.key);
+  }
+
+  int get value => this.hand.index * Rank.values.length + this.rank.index;
+
+  @override
+  bool operator ==(other) {
+    return other is HandRank && other.value == value;
+  }
+
+  @override
+  int get hashCode => this.hand.index.hashCode ^ this.rank.index.hashCode;
+}
+
+handValue(Iterable<GameCard> cards) {}
+
+Map<Suit, int> suitCount(Iterable<GameCard> cards) =>
+    cards.fold<Map<Suit, int>>({}, (p, e) {
+      p[e.suit] = (p[e.suit] ?? 0) + 1;
+      return p;
+    });
+
+Map<Rank, int> rankCount(Iterable<GameCard> cards) =>
+    cards.fold<Map<Rank, int>>({}, (p, e) {
+      p[e.rank] = (p[e.rank] ?? 0) + 1;
+      return p;
+    });
+
+bool isPair(Iterable<GameCard> cards) =>
+    suitCount(cards).values.where((e) => e == 2).length == 1;
+
+bool isTwoPair(Iterable<GameCard> cards) =>
+    suitCount(cards).values.where((e) => e == 2).length == 2;
+
+bool isFlush(Iterable<GameCard> cards) =>
+    suitCount(cards).values.any((e) => e == 5);
+
+bool isTreeKind(Iterable<GameCard> cards) =>
+    suitCount(cards).values.any((e) => e == 3);
+
+bool isFourKind(Iterable<GameCard> cards) =>
+    suitCount(cards).values.any((e) => e == 4);
+
+bool isFullHouse(Iterable<GameCard> cards) =>
+    rankCount(cards)
+        .values
+        .fold(0, (p, c) => p | (c == 2 ? 1 : (c == 3 ? 2 : 0))) ==
+    3;
+
+bool isStraight(Iterable<GameCard> cards) {
+  var low = 15;
+  var high = -1;
+  var sum = 0;
+  cards.forEach((e) {
+    low = min(e.rank.index, low);
+    high = max(e.rank.index, high);
+    sum += e.rank.index;
+  });
+  return sum - 5 * low == (high - low) * (high - low + 1) * 0.5;
+}
+
+bool isStraightFlush(Iterable<GameCard> cards) =>
+    isStraight(cards) && isFlush(cards);
+
+bool isRoyalFlush(Iterable<GameCard> cards) =>
+    isStraight(cards) && isFlush(cards) && cards.any((e) => e.rank == Rank.Ace);
 
 rankString(Rank rank) {
   switch (rank) {
@@ -144,10 +266,20 @@ class Table {
 class Dealer {
   final Table table = Table();
 
-  timeout() {
-  }
-
-
+  timeout() {}
 }
 
 class GameEvent {}
+
+extension Itex<T> on Iterable<T> {
+  T max<V extends Comparable>(V f(T e)) => this.reduce((max, e) {
+        switch (Comparable.compare(f(max), f(e))) {
+          case -1:
+            return e;
+          case 0:
+          case 1:
+          default:
+            return max;
+        }
+      });
+}
