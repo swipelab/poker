@@ -2,7 +2,21 @@ import 'dart:math';
 
 import 'package:scoped/scoped.dart';
 
-enum Rank { Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace }
+enum Rank {
+  Two,
+  Three,
+  Four,
+  Five,
+  Six,
+  Seven,
+  Eight,
+  Nine,
+  Ten,
+  Jack,
+  Queen,
+  King,
+  Ace
+}
 
 enum Suit { Club, Diamond, Heart, Spade }
 
@@ -68,7 +82,7 @@ shuffle(List list) {
 
 class GameCard {
   final Rank rank;
-  final Suit suit;  
+  final Suit suit;
 
   GameCard({this.rank, this.suit});
 }
@@ -81,7 +95,8 @@ class Deck {
   static Deck shuffled() {
     final cards = List<GameCard>();
 
-    Rank.values.forEach((rank) => Suit.values.forEach((suit) => cards.add(GameCard(rank: rank, suit: suit))));
+    Rank.values.forEach((rank) => Suit.values
+        .forEach((suit) => cards.add(GameCard(rank: rank, suit: suit))));
 
     shuffle(cards);
 
@@ -97,6 +112,7 @@ class Deck {
 class Player {
   final String alias;
   final int balance;
+
   Player({this.alias, this.balance});
 }
 
@@ -116,7 +132,8 @@ class Table {
   final Ref<Round> round = Ref(Round.Begin);
 
   final Deck deck = Deck.shuffled();
-  final Refs<Seat> seats = Refs<Seat>(Iterable.generate(6, (i) => Seat(key: i)));
+  final Refs<Seat> seats =
+      Refs<Seat>(Iterable.generate(6, (i) => Seat(key: i)));
   final Refs<GameCard> common = Refs<GameCard>();
 
   revealCommon() {
@@ -126,6 +143,11 @@ class Table {
 
 class Dealer {
   final Table table = Table();
+
+  timeout() {
+  }
+
+
 }
 
 class GameEvent {}
