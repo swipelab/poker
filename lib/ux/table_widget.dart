@@ -2,34 +2,17 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:poker/game.dart';
-import 'package:poker/ux/game_card_widget.dart';
+import 'package:poker/ux/card_widget.dart';
 import 'package:poker/ux/seat_widget.dart';
-import 'package:poker/list_extension.dart';
 
 class TableWidget extends StatelessWidget {
-  final List<PokerCard> cards = [
-    PokerCard(rank: Rank.Ace, suit: Suit.Spade),
-    PokerCard(rank: Rank.King, suit: Suit.Spade),
-    PokerCard(rank: Rank.Jack, suit: Suit.Spade),
-    PokerCard(rank: Rank.Ten, suit: Suit.Spade),
-    PokerCard(rank: Rank.Nine, suit: Suit.Spade),
-  ];
 
-  final List<Player> players = [
-    Player(alias: 'alex', balance: 300),
-    Player(alias: 'krisu', balance: 640),
-    Player(alias: 'seb', balance: 980),
-    Player(alias: 'seb', balance: 980),
-    Player(alias: 'seb', balance: 980),
-    Player(alias: 'seb', balance: 980),
-  ];
-
-  final List<int> seats = List.filled(6, null);
+  final PlayerTable table;
 
   final double cardSize;
   final double progress;
 
-  TableWidget({this.cardSize = 24, this.progress});
+  TableWidget({this.cardSize = 24, this.progress, this.table});
 
   final playerCount = 6;
   final align = {
@@ -72,10 +55,10 @@ class TableWidget extends StatelessWidget {
     return Row(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
-        children: cards
-            .mapIndex((e, i) => Padding(
+        children: table.common
+            .mapi((e, i) => Padding(
                   padding: EdgeInsets.only(left: i > 2 ? 24.0 : 6.0),
-                  child: GameCardWidget(card: e, size: 48),
+                  child: CardWidget(card: e, size: 48),
                 ))
             .toList());
   }
@@ -89,16 +72,16 @@ class TableWidget extends StatelessWidget {
           width: 1280 * .55,
           height: 720 * .55,
           child: CustomPaint(
-            painter: TablePainter(offset: pi / players.length, playerCount: playerCount, length: 0, progress: progress),
+            painter: TablePainter(offset: pi / table.seats.length, playerCount: playerCount, length: 0, progress: progress),
             child: Stack(
               children: <Widget>[
                 Positioned.fill(
                   child: buildCommonCards(context),
                 ),
               ]..addAll(
-                  players.mapIndex(
+                  table.seats.mapi(
                     (e, i) => Align(
-                      alignment: align[players.length][i],
+                      alignment: align[table.seats.length][i],
                       child: SeatWidget(alias: e.alias, balance: e.balance.toString()),
                     ),
                   ),

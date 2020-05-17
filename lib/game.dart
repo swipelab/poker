@@ -217,8 +217,6 @@ class PokerTable {
       seats: Iterable.generate(seats, (i) => Seat(key: i)).toList());
 }
 
-class GameSeat {}
-
 class PlayerTableSeat {
   final int bet;
   final int balance;
@@ -235,27 +233,46 @@ class PlayerTableSeat {
 class PlayerTable {
   final Player player;
   final List<PlayerTableSeat> seats;
-  PlayerTable({this.player, this.seats});
+  final List<PokerCard> common;
+  PlayerTable({this.player, this.seats, this.common});
 }
 
 class Dealer {
   final PokerTable table = PokerTable.of(6);
-  final List<Player> players = List();
+  final List<Player> players = [];
 
   Timer _timer;
   DateTime _startedAt;
   Duration _elapsed;
-
-
 
   double get actionProgress =>
       _elapsed.inMilliseconds / actionTimeout.inMilliseconds;
 
   final Duration actionTimeout = Duration(seconds: 10);
 
+  fillSeats() {
+    players.clear();
+    players.addAll([
+      Player(alias: 'alex', balance: 200),
+      Player(alias: 'krisu', balance: 200),
+      Player(alias: 'greeno', balance: 200),
+      Player(alias: 'chris', balance: 200),
+      Player(alias: 'penny', balance: 200),
+      Player(alias: 'jenny', balance: 200),
+    ]);
+
+    var i = 0;
+    for (var seat in table.seats) {
+      seat.player = players[i];
+      i++;
+    }
+  }
+
   start() {
     _startedAt = DateTime.now();
     _timer = Timer.periodic(Duration(milliseconds: 100), handleTick);
+
+    this.broadcast();
   }
 
   handleTick(Timer timer) {
@@ -271,9 +288,21 @@ class Dealer {
 
   broadcast() {
     playerStates.clear();
-    table.seats.where((e) => e.player != null).forEach((e) {
+
+    final common = [
+      PokerCard(rank: Rank.Ace, suit: Suit.Diamond),
+      PokerCard(rank: Rank.King, suit: Suit.Club),
+      PokerCard(rank: Rank.Queen, suit: Suit.Club),
+      PokerCard(rank: Rank.Jack, suit: Suit.Club),
+      PokerCard(rank: Rank.Ten, suit: Suit.Club),
+    ];
+    
+    for (final e in table.seats) {
+      if (e.player == null) continue;
+
       final state = PlayerTable(
         player: e.player,
+        common: common,
         seats: table.seats
             .map((s) => PlayerTableSeat(
                 bet: s.bet,
@@ -285,7 +314,7 @@ class Dealer {
             .toList(),
       );
       playerStates[e.player.alias] = state;
-    });
+    }
 
     playerState.value = playerStates.values.first;
   }
@@ -301,7 +330,11 @@ class Dealer {
 
 class GameEvent {}
 
-extension Itex<T> on Iterable<T> {
+typedef T _Transformation<S, T>(S value, int index);
+
+extension Iter<T> on Iterable<T> {
+  Iterable<V> mapi<V>(V f(T e, int i)) => MapIterable<T, V>(this, f);
+
   T max<V extends Comparable>(V f(T e)) => this.reduce((max, e) {
         switch (Comparable.compare(f(max), f(e))) {
           case -1:
@@ -312,4 +345,39 @@ extension Itex<T> on Iterable<T> {
             return max;
         }
       });
+}
+
+class MapIterable<S, T> extends Iterable<T> {
+  final Iterable<S> _iterable;
+  final _Transformation<S, T> _f;
+
+  factory MapIterable(Iterable<S> iterable, T function(S value, int index)) =>
+      MapIterable<S, T>._(iterable, function);
+
+  MapIterable._(this._iterable, this._f);
+
+  Iterator<T> get iterator => MapI<S, T>(_iterable.iterator, _f);
+  int get length => _iterable.length;
+  bool get isEmpty => _iterable.isEmpty;
+}
+
+class MapI<S, T> extends Iterator<T> {
+  T _current;
+  int _index = -1;
+  final Iterator<S> _iterator;
+  final _Transformation<S, T> _f;
+
+  MapI(this._iterator, this._f);
+
+  bool moveNext() {
+    if (_iterator.moveNext()) {
+      _current = _f(_iterator.current, ++_index);
+      return true;
+    }
+    _current = null;
+    _index = -1;
+    return false;
+  }
+
+  T get current => _current;
 }

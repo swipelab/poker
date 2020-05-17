@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -13,7 +11,7 @@ void main() async {
   SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
 
   final app = App();
-  final dealer = Dealer();
+  final dealer = Dealer()..fillSeats()..start();
   final store = Store()..add(app)..add(dealer);
 
   await app.init();
@@ -22,7 +20,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  // This widget is the root of your application.
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -31,27 +29,19 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      routes: {'/': (_) => TablePage()},
+      routes: {
+        '/': (_) => _
+            .get<Dealer>()
+            .playerState
+            .bindValue((context, value) => TablePage(table: value))
+      },
     );
   }
 }
 
-class TablePage extends StatefulWidget {
-  @override
-  _TablePageState createState() => _TablePageState();
-}
-
-class _TablePageState extends State<TablePage> {
-  final Deck deck = Deck.shuffled();
-
-  initState() {
-    super.initState();
-  }
-
-
-  handleTick(Timer t) {
-    setState(() {});
-  }
+class TablePage extends StatelessWidget {
+  final PlayerTable table;
+  TablePage({this.table});
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +67,7 @@ class _TablePageState extends State<TablePage> {
             Positioned.fill(
                 child: Padding(
                     padding: const EdgeInsets.only(bottom: 128.0),
-                    child: TableWidget(progress: 0))),
+                    child: TableWidget(progress: 0, table: table))),
             Align(
               alignment: Alignment(0, 0.95),
               child: Container(

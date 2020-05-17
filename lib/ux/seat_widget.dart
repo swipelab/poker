@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:poker/game.dart';
-import 'package:poker/ux/game_card_widget.dart';
+import 'package:poker/ux/card_widget.dart';
 
 class Avatar extends StatelessWidget {
   final double radius;
@@ -45,14 +45,14 @@ class SeatWidget extends StatelessWidget {
           Transform(
             transform: Matrix4.identity()
               ..translate(avatarRadius * 1.7, cardSize * 0.2),
-            child: GameCardWidget(
+            child: CardWidget(
                 card: PokerCard(rank: Rank.Ace, suit: Suit.Spade),
                 size: cardSize),
           ),
           Transform(
             transform: Matrix4.identity()
               ..translate(avatarRadius * 1.7 + cardSize * .7, cardSize * 0.4),
-            child: GameCardWidget(
+            child: CardWidget(
                 card: PokerCard(rank: Rank.Ace, suit: Suit.Spade),
                 size: cardSize),
           ),
@@ -60,7 +60,7 @@ class SeatWidget extends StatelessWidget {
               transform: Matrix4.identity()..translate(0.0, avatarRadius * 1.8),
               child: Text(alias,
                   textWidthBasis: TextWidthBasis.longestLine,
-                  textAlign: TextAlign.center,
+                  textAlign: TextAlign.right,
                   style:
                       TextStyle(fontSize: fontSize, color: Color(0xFFD4D4D4)))),
           Transform(
@@ -68,7 +68,7 @@ class SeatWidget extends StatelessWidget {
                 ..translate(0.0, avatarRadius * 1.8 + fontSize * 1.1),
               child: Text(balance,
                   textWidthBasis: TextWidthBasis.longestLine,
-                  textAlign: TextAlign.center,
+                  textAlign: TextAlign.right,
                   style:
                       TextStyle(fontSize: fontSize, color: Color(0xFFFFD295)))),
         ],

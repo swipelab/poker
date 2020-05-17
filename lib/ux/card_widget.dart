@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:poker/game.dart';
 
-class GameCardWidget extends StatelessWidget {
+class CardWidget extends StatelessWidget {
   Color color(PokerCard card) => (card.suit == Suit.Heart || card.suit == Suit.Diamond) ? Colors.red : Colors.black;
 
   Widget suit(BuildContext context, PokerCard card, {double size = 22}) =>
@@ -14,7 +14,7 @@ class GameCardWidget extends StatelessWidget {
   final PokerCard card;
   final double size;
 
-  GameCardWidget({this.card, this.size = 48});
+  CardWidget({this.card, this.size = 48});
 
   @override
   Widget build(BuildContext context) {
