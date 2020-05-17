@@ -13,7 +13,8 @@ void main() async {
   SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
 
   final app = App();
-  final store = Store()..add(app);
+  final dealer = Dealer();
+  final store = Store()..add(app)..add(dealer);
 
   await app.init();
 
@@ -43,31 +44,12 @@ class TablePage extends StatefulWidget {
 class _TablePageState extends State<TablePage> {
   final Deck deck = Deck.shuffled();
 
-  Duration _elapsed;
-  Duration _playerTurn;
-  Timer _timer;
-  DateTime _startedAt;
-  double _progress = 0.0;
-
   initState() {
     super.initState();
-    _elapsed = Duration.zero;
-    _startedAt = DateTime.now();
-    _playerTurn = Duration(seconds: 10);
-    _timer = Timer.periodic(Duration(milliseconds: 100), handleTick);
-    _progress = 0;
   }
 
-  dispose() {
-    super.dispose();
-    _timer?.cancel();
-    _timer = null;
-  }
 
   handleTick(Timer t) {
-    _elapsed = DateTime.now().difference(_startedAt);
-
-    _progress = _elapsed.inMilliseconds / _playerTurn.inMilliseconds;
     setState(() {});
   }
 
@@ -95,7 +77,7 @@ class _TablePageState extends State<TablePage> {
             Positioned.fill(
                 child: Padding(
                     padding: const EdgeInsets.only(bottom: 128.0),
-                    child: TableWidget(progress: _progress))),
+                    child: TableWidget(progress: 0))),
             Align(
               alignment: Alignment(0, 0.95),
               child: Container(

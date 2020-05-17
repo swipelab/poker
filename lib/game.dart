@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:scoped/scoped.dart';
 
@@ -19,7 +20,7 @@ enum Rank {
 
 enum Suit { Club, Diamond, Heart, Spade }
 
-enum Round { Begin, Preflop, Flop, Turn, River, End }
+enum Round { Idle, Preflop, Flop, Turn, River, Over }
 
 enum Hand {
   HighCard,
@@ -40,7 +41,7 @@ class HandRank {
 
   HandRank(this.hand, this.rank);
 
-  static HandRank from(Iterable<GameCard> cards) {
+  static HandRank from(Iterable<PokerCard> cards) {
     final suits = <Suit, int>{};
     final ranks = <Rank, int>{};
 
@@ -57,14 +58,16 @@ class HandRank {
       ranks[e.rank] = (ranks[e.rank] ?? 0) + 1;
     });
 
-    final straight = sum - 5 * low == 0.5 * (high - low) * (high - low + 1);
+    final groups = ranks.entries.length;
+    final product = ranks.entries.fold(1, (p, e) => p *= e.value);
+
+    final straight = groups == 5 &&
+        ((sum - 5 * low == 0.5 * (high - low) * (high - low + 1)) || sum == 18);
+
     final aceHigh = low == Rank.Ten.index;
     final flushed = suits.values.max((e) => e);
     final kind =
         ranks.entries.max((e) => e.value * Rank.values.length + e.key.index);
-
-    final groups = ranks.entries.length;
-    final product = ranks.entries.fold(1, (p, e) => p *= e.value);
 
     if (flushed == 5 && straight && aceHigh)
       return HandRank(Hand.RoyalFlush, Rank.Ace);
@@ -90,59 +93,6 @@ class HandRank {
   @override
   int get hashCode => this.hand.index.hashCode ^ this.rank.index.hashCode;
 }
-
-handValue(Iterable<GameCard> cards) {}
-
-Map<Suit, int> suitCount(Iterable<GameCard> cards) =>
-    cards.fold<Map<Suit, int>>({}, (p, e) {
-      p[e.suit] = (p[e.suit] ?? 0) + 1;
-      return p;
-    });
-
-Map<Rank, int> rankCount(Iterable<GameCard> cards) =>
-    cards.fold<Map<Rank, int>>({}, (p, e) {
-      p[e.rank] = (p[e.rank] ?? 0) + 1;
-      return p;
-    });
-
-bool isPair(Iterable<GameCard> cards) =>
-    suitCount(cards).values.where((e) => e == 2).length == 1;
-
-bool isTwoPair(Iterable<GameCard> cards) =>
-    suitCount(cards).values.where((e) => e == 2).length == 2;
-
-bool isFlush(Iterable<GameCard> cards) =>
-    suitCount(cards).values.any((e) => e == 5);
-
-bool isTreeKind(Iterable<GameCard> cards) =>
-    suitCount(cards).values.any((e) => e == 3);
-
-bool isFourKind(Iterable<GameCard> cards) =>
-    suitCount(cards).values.any((e) => e == 4);
-
-bool isFullHouse(Iterable<GameCard> cards) =>
-    rankCount(cards)
-        .values
-        .fold(0, (p, c) => p | (c == 2 ? 1 : (c == 3 ? 2 : 0))) ==
-    3;
-
-bool isStraight(Iterable<GameCard> cards) {
-  var low = 15;
-  var high = -1;
-  var sum = 0;
-  cards.forEach((e) {
-    low = min(e.rank.index, low);
-    high = max(e.rank.index, high);
-    sum += e.rank.index;
-  });
-  return sum - 5 * low == (high - low) * (high - low + 1) * 0.5;
-}
-
-bool isStraightFlush(Iterable<GameCard> cards) =>
-    isStraight(cards) && isFlush(cards);
-
-bool isRoyalFlush(Iterable<GameCard> cards) =>
-    isStraight(cards) && isFlush(cards) && cards.any((e) => e.rank == Rank.Ace);
 
 rankString(Rank rank) {
   switch (rank) {
@@ -202,23 +152,23 @@ shuffle(List list) {
   }
 }
 
-class GameCard {
+class PokerCard {
   final Rank rank;
   final Suit suit;
 
-  GameCard({this.rank, this.suit});
+  PokerCard({this.rank, this.suit});
 }
 
 class Deck {
-  final List<GameCard> cards;
+  final List<PokerCard> cards;
 
   Deck({this.cards});
 
   static Deck shuffled() {
-    final cards = List<GameCard>();
+    final cards = List<PokerCard>();
 
     Rank.values.forEach((rank) => Suit.values
-        .forEach((suit) => cards.add(GameCard(rank: rank, suit: suit))));
+        .forEach((suit) => cards.add(PokerCard(rank: rank, suit: suit))));
 
     shuffle(cards);
 
@@ -239,34 +189,114 @@ class Player {
 }
 
 class Seat {
-  final int key;
-  final Ref<int> balance = Ref(0);
-  final Ref<bool> active = Ref(false);
-  final Refs<GameCard> cards = Refs([]);
-  final Ref<Player> player = Ref();
+  int key;
+
+  int bet;
+  int balance = 0;
+
+  bool active = false;
+  final List<PokerCard> cards = [];
+  Player player;
 
   Seat({this.key});
 }
 
-class Table {
-  final Ref<int> bet = Ref(0);
-  final Ref<int> pot = Ref(0);
-  final Ref<Round> round = Ref(Round.Begin);
+class PokerTable {
+  int bet;
+  int pot;
 
-  final Deck deck = Deck.shuffled();
-  final Refs<Seat> seats =
-      Refs<Seat>(Iterable.generate(6, (i) => Seat(key: i)));
-  final Refs<GameCard> common = Refs<GameCard>();
+  Round round = Round.Idle;
 
-  revealCommon() {
-    common.add(deck.removeTop());
-  }
+  final Deck deck;
+  final List<Seat> seats;
+  final List<PokerCard> common = List<PokerCard>();
+
+  PokerTable({this.deck, this.seats, this.bet = 0, this.pot = 0});
+  static PokerTable of(int seats) => PokerTable(
+      deck: Deck.shuffled(),
+      seats: Iterable.generate(seats, (i) => Seat(key: i)).toList());
+}
+
+class GameSeat {}
+
+class PlayerTableSeat {
+  final int bet;
+  final int balance;
+
+  final bool active;
+
+  final String alias;
+  final List<PokerCard> cards;
+
+  PlayerTableSeat(
+      {this.bet, this.balance, this.active, this.alias, this.cards});
+}
+
+class PlayerTable {
+  final Player player;
+  final List<PlayerTableSeat> seats;
+  PlayerTable({this.player, this.seats});
 }
 
 class Dealer {
-  final Table table = Table();
+  final PokerTable table = PokerTable.of(6);
+  final List<Player> players = List();
+
+  Timer _timer;
+  DateTime _startedAt;
+  Duration _elapsed;
+
+
+
+  double get actionProgress =>
+      _elapsed.inMilliseconds / actionTimeout.inMilliseconds;
+
+  final Duration actionTimeout = Duration(seconds: 10);
+
+  start() {
+    _startedAt = DateTime.now();
+    _timer = Timer.periodic(Duration(milliseconds: 100), handleTick);
+  }
+
+  handleTick(Timer timer) {
+    _elapsed = DateTime.now().difference(_startedAt);
+  }
 
   timeout() {}
+
+  stop() {
+    _timer?.cancel();
+    _timer = null;
+  }
+
+  broadcast() {
+    playerStates.clear();
+    table.seats.where((e) => e.player != null).forEach((e) {
+      final state = PlayerTable(
+        player: e.player,
+        seats: table.seats
+            .map((s) => PlayerTableSeat(
+                bet: s.bet,
+                alias: s.player.alias,
+                balance: s.balance,
+                cards: e.player == s.player
+                    ? s.cards
+                    : [PokerCard(), PokerCard()]))
+            .toList(),
+      );
+      playerStates[e.player.alias] = state;
+    });
+
+    playerState.value = playerStates.values.first;
+  }
+
+  revealCommon() {
+    table.common.add(table.deck.removeTop());
+  }
+
+  Map<String, PlayerTable> playerStates = {};
+
+  Ref<PlayerTable> playerState = Ref();
 }
 
 class GameEvent {}

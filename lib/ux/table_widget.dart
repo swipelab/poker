@@ -7,12 +7,12 @@ import 'package:poker/ux/seat_widget.dart';
 import 'package:poker/list_extension.dart';
 
 class TableWidget extends StatelessWidget {
-  final List<GameCard> cards = [
-    GameCard(rank: Rank.Ace, suit: Suit.Spade),
-    GameCard(rank: Rank.King, suit: Suit.Spade),
-    GameCard(rank: Rank.Jack, suit: Suit.Spade),
-    GameCard(rank: Rank.Ten, suit: Suit.Spade),
-    GameCard(rank: Rank.Nine, suit: Suit.Spade),
+  final List<PokerCard> cards = [
+    PokerCard(rank: Rank.Ace, suit: Suit.Spade),
+    PokerCard(rank: Rank.King, suit: Suit.Spade),
+    PokerCard(rank: Rank.Jack, suit: Suit.Spade),
+    PokerCard(rank: Rank.Ten, suit: Suit.Spade),
+    PokerCard(rank: Rank.Nine, suit: Suit.Spade),
   ];
 
   final List<Player> players = [

@@ -46,14 +46,14 @@ class SeatWidget extends StatelessWidget {
             transform: Matrix4.identity()
               ..translate(avatarRadius * 1.7, cardSize * 0.2),
             child: GameCardWidget(
-                card: GameCard(rank: Rank.Ace, suit: Suit.Spade),
+                card: PokerCard(rank: Rank.Ace, suit: Suit.Spade),
                 size: cardSize),
           ),
           Transform(
             transform: Matrix4.identity()
               ..translate(avatarRadius * 1.7 + cardSize * .7, cardSize * 0.4),
             child: GameCardWidget(
-                card: GameCard(rank: Rank.Ace, suit: Suit.Spade),
+                card: PokerCard(rank: Rank.Ace, suit: Suit.Spade),
                 size: cardSize),
           ),
           Transform(

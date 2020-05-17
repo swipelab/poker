@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:poker/game.dart';
 
 class GameCardWidget extends StatelessWidget {
-  Color color(GameCard card) => (card.suit == Suit.Heart || card.suit == Suit.Diamond) ? Colors.red : Colors.black;
+  Color color(PokerCard card) => (card.suit == Suit.Heart || card.suit == Suit.Diamond) ? Colors.red : Colors.black;
 
-  Widget suit(BuildContext context, GameCard card, {double size = 22}) =>
+  Widget suit(BuildContext context, PokerCard card, {double size = 22}) =>
       Image.asset('assets/${card.suit.toString()}.Inner.png',
           width: size, height: size, filterQuality: FilterQuality.high);
 
-  Widget rank(BuildContext context, GameCard card, {double size = 22}) => Text(rankString(card.rank),
+  Widget rank(BuildContext context, PokerCard card, {double size = 22}) => Text(rankString(card.rank),
       style: TextStyle(color: color(card), fontSize: size, height: 1, fontWeight: FontWeight.w300));
 
-  final GameCard card;
+  final PokerCard card;
   final double size;
 
   GameCardWidget({this.card, this.size = 48});
