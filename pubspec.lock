@@ -280,6 +280,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.6"
+  ux:
+    dependency: "direct main"
+    description:
+      path: "../ux"
+      relative: true
+    source: path
+    version: "0.1.1"
   vector_math:
     dependency: transitive
     description:

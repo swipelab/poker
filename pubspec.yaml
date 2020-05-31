@@ -12,6 +12,8 @@ dependencies:
   cloud_firestore: ^0.13.2
   firebase_auth: ^0.16.0
   scoped: 2.0.0
+  ux: #any
+    path: "../ux"
 
 dev_dependencies:
   flutter_test:
