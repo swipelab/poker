@@ -215,13 +215,20 @@ class PokerTable {
   int bet;
   int pot;
 
+  //small blind seat
+  int small;
+
+  //big blind seat
+  int get big => (small + 1) % seats.length;
+
   PokerRound round = PokerRound.Ready;
 
-  final Deck deck;
+  Deck deck;
   final List<Seat> seats;
   final List<PokerCard> common = List<PokerCard>();
 
-  PokerTable({this.deck, this.seats, this.bet = 0, this.pot = 0});
+  PokerTable(
+      {this.deck, this.seats, this.bet = 0, this.pot = 0, this.small = 0});
 
   static PokerTable of(int seats) => PokerTable(
       deck: Deck.shuffled(),
@@ -229,16 +236,25 @@ class PokerTable {
 }
 
 class PlayerTableSeat {
+  final int small;
+  final int big;
+
   final int bet;
   final int balance;
-
   final bool active;
 
   final String alias;
   final List<PokerCard> cards;
 
-  PlayerTableSeat(
-      {this.bet, this.balance, this.active, this.alias, this.cards});
+  PlayerTableSeat({
+    this.bet,
+    this.balance,
+    this.active,
+    this.alias,
+    this.cards,
+    this.small,
+    this.big,
+  });
 }
 
 class PlayerTable {
@@ -271,6 +287,10 @@ class Dealer {
     players.addAll([
       Player(alias: 'alex', balance: 200),
       Player(alias: 'krisu', balance: 200),
+      Player(alias: 'john', balance: 200),
+      Player(alias: 'alex', balance: 200),
+      Player(alias: 'krisu', balance: 200),
+      Player(alias: 'john', balance: 200),
     ]);
 
     var i = 0;
@@ -341,12 +361,41 @@ class Dealer {
 
   reset() {
     table.round = PokerRound.Ready;
+    table.deck = Deck.shuffled();
+    table.common.clear();
+    for (final seat in table.seats) {
+      seat.cards.clear();
+    }
   }
 
   next() {
     switch (table.round) {
       case PokerRound.Ready:
+        //start
+        var i = table.small;
+        var l = 0;
+        while (l < table.seats.length) {
+          l++;
+          i = (i + 1) % table.seats.length;
+          if (table.seats[i].player == null) continue;
+          table.seats[i].cards.add(table.deck.removeTop());
+          table.seats[i].cards.add(table.deck.removeTop());
+        }
+
+        //end
         table.round = PokerRound.Preflop;
+        break;
+      case PokerRound.Preflop:
+        table.round = PokerRound.Flop;
+        break;
+      case PokerRound.Flop:
+        table.round = PokerRound.Turn;
+        break;
+      case PokerRound.Turn:
+        table.round = PokerRound.River;
+        break;
+      case PokerRound.River:
+        table.round = PokerRound.Over;
         break;
     }
   }

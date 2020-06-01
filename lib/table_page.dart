@@ -57,10 +57,25 @@ class _TablePageState extends State<TablePage> {
         ],
       ),
       body: container,
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.skip_next),
-        onPressed: dealer.next,
-      ),
+      floatingActionButton: Align(
+          alignment: Alignment.bottomCenter,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+
+            children: <Widget>[
+              FlatButton(
+                color: Colors.red,
+                child: Icon(Icons.refresh),
+                onPressed: dealer.reset,
+              ),
+              SizedBox(width: 12),
+              FlatButton(
+                color: Colors.red,
+                child: Icon(Icons.skip_next),
+                onPressed: dealer.next,
+              ),
+            ],
+          )),
       //floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
