@@ -66,7 +66,7 @@ class _CardWidgetState extends State<CardWidget> {
           image: DecorationImage(
               image: AssetImage('assets/Back.Grill.png'),
               colorFilter: ColorFilter.mode(
-                  Colors.white.withOpacity(0.7), BlendMode.dstATop),
+                  Colors.white.withOpacity(0.1), BlendMode.dstATop),
               fit: BoxFit.scaleDown),
           boxShadow: [BoxShadow(blurRadius: 3, color: Colors.black54)]),
       child: Image.asset('assets/Logo.png', filterQuality: FilterQuality.high));

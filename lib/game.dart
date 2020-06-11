@@ -36,8 +36,7 @@ enum Hand {
   RoyalFlush, //not necessary
 }
 
-enum Action {
-  Bet,
+enum PokerAction {
   Raise,
   Call,
   Fold,
@@ -191,26 +190,6 @@ class Deck {
   }
 }
 
-class Player {
-  final String alias;
-  final int balance;
-
-  Player({this.alias, this.balance});
-}
-
-class Seat {
-  int key;
-
-  int bet;
-  int balance = 0;
-
-  bool active = false;
-  final List<PokerCard> cards = [];
-  Player player;
-
-  Seat({this.key});
-}
-
 class PokerTable {
   int bet;
   int pot;
@@ -219,9 +198,63 @@ class PokerTable {
   int small;
 
   //big blind seat
-  int get big => (small + 1) % seats.length;
+  int get big => nextTo(small);
+
+  int entry;
+
+  int current;
 
   PokerRound round = PokerRound.Ready;
+
+  int nextTo(int seat) {
+    if (seat == null) return null;
+    var i = seat;
+    var l = 0;
+    while (l < seats.length) {
+      i = (i + 1) % seats.length;
+      l++;
+      if (seats[i].active != true) continue;
+      return i;
+    }
+    return null;
+  }
+
+  reset() {
+    bet = 0;
+    pot = 0;
+
+    entry = 5;
+
+    small = 0;
+    round = PokerRound.Ready;
+    deck = Deck.shuffled();
+    common.clear();
+
+    for (final seat in seats) {
+      seat.reset();
+    }
+  }
+
+  deal() {
+    var index = small;
+    var length = 0;
+    while (length < seats.length) {
+      length++;
+      index = (index + 1) % seats.length;
+      if (seats[index].player == null) continue;
+
+      seats[index].cards.add(deck.removeTop());
+      seats[index].cards.add(deck.removeTop());
+    }
+
+    current = nextTo(big);
+  }
+
+  dealCommon() {
+    if (common.length == 5) return;
+    final top = deck.removeTop();
+    if (top != null) common.add(top);
+  }
 
   Deck deck;
   final List<Seat> seats;
@@ -233,38 +266,6 @@ class PokerTable {
   static PokerTable of(int seats) => PokerTable(
       deck: Deck.shuffled(),
       seats: Iterable.generate(seats, (i) => Seat(key: i)).toList());
-}
-
-class PlayerTableSeat {
-  final int small;
-  final int big;
-
-  final int bet;
-  final int balance;
-  final bool active;
-
-  final String alias;
-  final List<PokerCard> cards;
-
-  PlayerTableSeat({
-    this.bet,
-    this.balance,
-    this.active,
-    this.alias,
-    this.cards,
-    this.small,
-    this.big,
-  });
-}
-
-class PlayerTable {
-  final PokerRound round;
-  final Player player;
-  final List<PlayerTableSeat> seats;
-  final List<PokerCard> common;
-  final List<Action> actions;
-
-  PlayerTable({this.player, this.seats, this.common, this.actions, this.round});
 }
 
 class Dealer {
@@ -288,11 +289,10 @@ class Dealer {
       Player(alias: 'alex', balance: 200),
       Player(alias: 'krisu', balance: 200),
       Player(alias: 'john', balance: 200),
-      Player(alias: 'alex', balance: 200),
-      Player(alias: 'krisu', balance: 200),
-      Player(alias: 'john', balance: 200),
+//      Player(alias: 'alex', balance: 200),
+//      Player(alias: 'krisu', balance: 200),
+//      Player(alias: 'john', balance: 200),
     ]);
-
     var i = 0;
     while (i < table.seats.length) {
       if (i < players.length) {
@@ -313,8 +313,6 @@ class Dealer {
 
   handleTick(Timer timer) {
     _elapsed = DateTime.now().difference(_startedAt);
-    table.seats[0].balance += 1;
-    revealCommon();
     broadcast();
   }
 
@@ -326,13 +324,19 @@ class Dealer {
   }
 
   PlayerTable projectTable(Player player) {
+    final seat = table.seats.indexWhere((e) => e.player == player);
     final view = PlayerTable(
         round: table.round,
         player: player,
         common: table.common,
+        seat: seat,
+        current: seat == table.current,
+        bet: table.bet,
+        entry: table.entry,
         seats: table.seats
-            .map((seat) => PlayerTableSeat(
-                active: seat.player != null,
+            .mapi((seat, i) => PlayerTableSeat(
+                active: seat.active,
+                current: table.current == i,
                 bet: seat.bet,
                 alias: seat.player?.alias ?? '',
                 balance: seat.balance,
@@ -347,56 +351,179 @@ class Dealer {
     final List<PlayerTable> v = [];
 
     for (final seat in table.seats) {
-      v.add(projectTable(seat.player));
+      if (seat.player != null) v.add(projectTable(seat.player));
     }
 
     views.value = v;
   }
 
-  revealCommon() {
-    if (table.common.length == 5) return;
-    final top = table.deck.removeTop();
-    if (top != null) table.common.add(top);
+  reset() {
+    table.reset();
   }
 
-  reset() {
-    table.round = PokerRound.Ready;
-    table.deck = Deck.shuffled();
-    table.common.clear();
-    for (final seat in table.seats) {
-      seat.cards.clear();
-    }
+  call(int seat) {
+    if (seat != table.current) return;
+
+    final target = table.bet;
+    final diff = target - table.seats[seat].bet;
+
+    table.pot += diff;
+    table.seats[seat].bet = target;
+    table.seats[seat].balance -= diff;
+
+    table.bet = target;
+
+    nextPlayer();
+  }
+
+  raise(int seat, int amount) {
+    if (seat != table.current) return;
+
+    final target = table.bet + amount;
+    final diff = target - table.seats[seat].bet;
+
+    table.pot += diff;
+    table.seats[seat].bet = target;
+    table.seats[seat].balance -= diff;
+
+    table.bet = target;
+
+    nextPlayer();
+  }
+
+  fold(int seat) {
+    table.seats[seat].active = false;
+
+    if (table.current == seat) nextPlayer();
+  }
+
+  nextPlayer() {
+    table.current = table.nextTo(table.current);
   }
 
   next() {
     switch (table.round) {
       case PokerRound.Ready:
-        //start
-        var i = table.small;
-        var l = 0;
-        while (l < table.seats.length) {
-          l++;
-          i = (i + 1) % table.seats.length;
-          if (table.seats[i].player == null) continue;
-          table.seats[i].cards.add(table.deck.removeTop());
-          table.seats[i].cards.add(table.deck.removeTop());
-        }
-
-        //end
         table.round = PokerRound.Preflop;
+        table.deal();
+
+        table.current = table.small;
+
+        raise(table.small, table.entry);
+        raise(table.big, table.entry);
+
         break;
       case PokerRound.Preflop:
         table.round = PokerRound.Flop;
+        table.dealCommon();
+        table.dealCommon();
+        table.dealCommon();
+
         break;
       case PokerRound.Flop:
         table.round = PokerRound.Turn;
+        table.dealCommon();
+
         break;
       case PokerRound.Turn:
         table.round = PokerRound.River;
+        table.dealCommon();
+
         break;
       case PokerRound.River:
         table.round = PokerRound.Over;
         break;
+      case PokerRound.Over:
+        //finished
+        break;
     }
+  }
+}
+
+class PlayerTableSeat {
+  final int small;
+  final int big;
+
+  final int bet;
+  final int balance;
+  final bool active;
+
+  final bool current;
+
+  final String alias;
+  final List<PokerCard> cards;
+
+  PlayerTableSeat({
+    this.bet,
+    this.balance,
+    this.active,
+    this.current,
+    this.alias,
+    this.cards,
+    this.small,
+    this.big,
+  });
+}
+
+class PlayerTable {
+  final PokerRound round;
+
+  final Player player;
+  final int seat;
+  final int bet;
+  final int entry;
+
+  final bool current;
+
+  bool get active => seats[seat].active;
+
+  final List<PlayerTableSeat> seats;
+  final List<PokerCard> common;
+  final List<PokerAction> actions;
+
+  PlayerTable(
+      {this.player,
+      this.seat,
+      this.bet,
+      this.entry,
+      this.current,
+      this.seats,
+      this.common,
+      this.actions,
+      this.round});
+}
+
+class PlayerAction {
+  final PokerAction action;
+  final Player player;
+
+  PlayerAction({this.action, this.player});
+}
+
+class Player {
+  final String alias;
+  final int balance;
+
+  Player({this.alias, this.balance});
+}
+
+class Seat {
+  int key;
+
+  int bet = 0;
+  int balance = 0;
+
+  bool active = false;
+  final List<PokerCard> cards = [];
+  Player player;
+
+  Seat({this.key});
+
+  reset() {
+    active = player != null;
+
+    cards.clear();
+    bet = 0;
+    balance = 0;
   }
 }

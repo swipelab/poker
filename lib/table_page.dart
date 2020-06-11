@@ -22,7 +22,12 @@ class _TablePageState extends State<TablePage> {
       ..start();
   }
 
-  Widget cell(Widget child) => Container(
+  int cols = 3;
+
+  setColumns(int columns) => setState(() => cols = columns);
+
+  Widget cell(Widget child, {Key key}) => Container(
+        key: key,
         decoration: BoxDecoration(border: Border.all(color: Colors.white)),
         child: FittedBox(
             fit: BoxFit.scaleDown,
@@ -31,12 +36,13 @@ class _TablePageState extends State<TablePage> {
 
   @override
   Widget build(BuildContext context) {
-    final dealer = game;
-
     final container = Container(
-      child: dealer.views.bindValue((context, v) => GridView.count(
-            crossAxisCount: 2,
-            children: v.map((e) => cell(PlayerTableWidget(table: e))).toList(),
+      child: game.views.bindValue((context, v) => GridView.count(
+            crossAxisCount: cols,
+            children: v
+                .mapi((e, i) => cell(PlayerTableWidget(game: game, table: e),
+                    key: Key(i.toString())))
+                .toList(),
           )),
     );
 
@@ -57,34 +63,57 @@ class _TablePageState extends State<TablePage> {
         ],
       ),
       body: container,
-      floatingActionButton: Align(
-          alignment: Alignment.bottomCenter,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-
-            children: <Widget>[
-              FlatButton(
-                color: Colors.red,
-                child: Icon(Icons.refresh),
-                onPressed: dealer.reset,
-              ),
-              SizedBox(width: 12),
-              FlatButton(
-                color: Colors.red,
-                child: Icon(Icons.skip_next),
-                onPressed: dealer.next,
-              ),
-            ],
-          )),
-      //floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Align(
+            alignment: Alignment(0, 1),
+            child: Row(
+              children: <Widget>[
+                FlatButton(
+                  color: Colors.white,
+                  child: Text('1x', style: TextStyle(color: Colors.black)),
+                  onPressed: () => setColumns(1),
+                ),
+                SizedBox(width: 12),
+                FlatButton(
+                  color: Colors.white,
+                  child: Text('2x', style: TextStyle(color: Colors.black)),
+                  onPressed: () => setColumns(2),
+                ),
+                SizedBox(width: 12),
+                FlatButton(
+                  color: Colors.white,
+                  child: Text('3x', style: TextStyle(color: Colors.black)),
+                  onPressed: () => setColumns(3),
+                ),
+                Expanded(
+                    child: Container(
+                  height: 1,
+                )),
+                FlatButton(
+                  color: Colors.red,
+                  child: Icon(Icons.refresh),
+                  onPressed: game.reset,
+                ),
+                SizedBox(width: 12),
+                FlatButton(
+                  color: Colors.red,
+                  child: Icon(Icons.skip_next),
+                  onPressed: game.next,
+                ),
+              ],
+            )),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 }
 
 class PlayerTableWidget extends StatelessWidget {
   final PlayerTable table;
+  final Dealer game;
 
-  PlayerTableWidget({this.table});
+  PlayerTableWidget({this.game, this.table, Key key}) : super(key: key);
 
   Widget build(BuildContext context) {
     return Container(
@@ -114,11 +143,22 @@ class PlayerTableWidget extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  FlatButton(child: Text('Fold'), onPressed: () {}),
+                  FlatButton(
+                      child: Text('Fold'),
+                      onPressed:
+                          table.active ? () => game.fold(table.seat) : null),
                   Container(width: 1, color: Colors.grey.shade200),
-                  FlatButton(child: Text('Call'), onPressed: () {}),
+                  FlatButton(
+                      child: Text('Call'),
+                      onPressed:
+                          table.current ? () => game.call(table.seat) : null),
                   Container(width: 1, color: Colors.grey.shade200),
-                  FlatButton(child: Text('Raise'), onPressed: () {}),
+                  FlatButton(
+                    child: Text('Raise'),
+                    onPressed: table.current
+                        ? () => game.raise(table.seat, table.entry)
+                        : null,
+                  ),
                 ],
               ),
             ),
@@ -200,7 +240,8 @@ class TableWidget extends StatelessWidget {
                   constraints: constraints,
                   children: table.seats
                       .mapi((e, i) => SeatWidget(
-                            active: e.active,
+                            enabled: e.active,
+                            focused: e.current,
                             alias: e.alias ?? '',
                             balance: e.balance?.toString(),
                             cards: e.cards,
